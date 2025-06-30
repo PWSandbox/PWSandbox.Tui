@@ -1,5 +1,5 @@
-// This file is a part of PWSandboxConsole ( https://github.com/yarb00/PWSandboxConsole )
-// PWSandboxConsole is licensed under the MIT (Expat) License:
+// This file is a part of PWSandbox.Tui ( https://github.com/PWSandbox/PWSandbox.Tui )
+// PWSandbox.Tui is licensed under the MIT (Expat) License:
 
 /* MIT License
  *
@@ -27,7 +27,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace PWSandboxConsole;
+namespace PWSandbox.Tui;
 
 public class PlayMenu
 {
@@ -48,7 +48,7 @@ public class PlayMenu
 		{
 			Console.Clear();
 
-			Console.WriteLine("PWSandboxConsole [Play]\n");
+			Console.WriteLine("PWSandbox.Tui [Play]\n");
 
 			ProcessMap();
 

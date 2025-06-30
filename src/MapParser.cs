@@ -1,5 +1,5 @@
-// This file is a part of PWSandboxConsole ( https://github.com/yarb00/PWSandboxConsole )
-// PWSandboxConsole is licensed under the MIT (Expat) License:
+// This file is a part of PWSandbox.Tui ( https://github.com/PWSandbox/PWSandbox.Tui )
+// PWSandbox.Tui is licensed under the MIT (Expat) License:
 
 /* MIT License
  *
@@ -28,7 +28,7 @@ using System;
 using System.IO;
 using System.Linq;
 
-namespace PWSandboxConsole;
+namespace PWSandbox.Tui;
 
 public enum MapObject
 {
