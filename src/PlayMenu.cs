@@ -119,8 +119,6 @@ D/Right - move right"
 		{
 			for (int x = 0; x < mapObjects.GetLength(1); x++)
 			{
-				if (playerPosition == (x, y)) Console.Write('!');
-
 				switch (mapObjects[y, x])
 				{
 					case MapObject.Unknown:
@@ -153,6 +151,8 @@ D/Right - move right"
 						if (playerPosition != (x, y)) Console.Write(' ');
 						break;
 				}
+
+				if (playerPosition == (x, y)) Console.Write('!');
 			}
 
 			Console.WriteLine();
