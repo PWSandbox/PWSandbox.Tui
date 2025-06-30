@@ -33,7 +33,7 @@ public class PlayMenu
 {
 	private readonly MapObject[,] mapObjects;
 
-	private (int x, int y)? playerPosition = null, lastFinish = null;
+	private (int x, int y)? playerPosition = null;
 
 	bool isExit = false, isOnFinish = false;
 
@@ -137,11 +137,7 @@ D/Right - move right"
 						break;
 
 					case MapObject.Finish:
-						if (playerPosition == (x, y) && lastFinish != (x, y))
-						{
-							isOnFinish = true;
-							lastFinish = playerPosition;
-						}
+						if (playerPosition == (x, y)) isOnFinish = true;
 						if (playerPosition != (x, y)) Console.Write('=');
 						break;
 
