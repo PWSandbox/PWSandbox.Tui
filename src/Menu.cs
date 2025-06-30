@@ -25,6 +25,7 @@
  */
 
 using System;
+using System.IO;
 
 namespace PWSandbox.Tui;
 
@@ -56,36 +57,15 @@ Q. Quit
 			{
 				case 'M':
 					Console.WriteLine("Enter map file (*.pws_map) location: ");
+					(PlayMenu? playMenu, string? errorText) = GetLoadedPlayMenu(Console.ReadLine() ?? string.Empty);
 
-					try
+					if (errorText is not null)
 					{
-						new PlayMenu(MapParser.ParseMapFromFile(Console.ReadLine(), MapFileVersion.V1_0)).Start();
-					}
-					catch (System.IO.FileNotFoundException)
-					{
-						Console.WriteLine("This file does not exist.");
+						Console.WriteLine(errorText);
 						Console.ReadKey(true);
 					}
-					catch (ArgumentException e) when (e.ParamName == "path")
-					{
-						Console.WriteLine("Please enter a valid path of the map file.");
-						Console.ReadKey(true);
-					}
-					catch (FormatException e) when (e.Message.Contains("(map: end)", StringComparison.OrdinalIgnoreCase))
-					{
-						Console.WriteLine("An error occured while parsing map: expected \"(map: end)\" in the end of file, but it was not found.");
-						Console.ReadKey(true);
-					}
-					catch (FormatException e) when (e.Message.Contains("(map: begin)", StringComparison.OrdinalIgnoreCase))
-					{
-						Console.WriteLine("An error occured while parsing map: expected \"(map: begin)\" after map header (\"?PWSandbox-Map 1.0;\"), but it was not found.");
-						Console.ReadKey(true);
-					}
-					catch (FormatException e) when (e.Message.Contains("map header", StringComparison.OrdinalIgnoreCase))
-					{
-						Console.WriteLine("This file is not a valid PWSandbox map or it is a map designed for a newer/older version of PWSandbox.");
-						Console.ReadKey(true);
-					}
+
+					playMenu?.Start();
 
 					continue;
 
@@ -101,5 +81,40 @@ Q. Quit
 		}
 
 		Console.Clear();
+	}
+
+	public static (PlayMenu? playMenu, string? errorText) GetLoadedPlayMenu(string mapFileLocation)
+	{
+		MapObject[,] mapObjects;
+		try
+		{
+			mapObjects = MapParser.ParseMapFromFile(mapFileLocation, MapFileVersion.V1_0);
+		}
+		catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
+		{
+			return (null, "This file does not exist.");
+		}
+		catch (ArgumentException e) when (e.ParamName == "path")
+		{
+			return (null, "Please enter a valid path of the map file.");
+		}
+		catch (FormatException e) when (e.Message.Contains("(map: end)", StringComparison.OrdinalIgnoreCase))
+		{
+			return (null, "An error occured while parsing map: expected \"(map: end)\" in the end of file, but it was not found.");
+		}
+		catch (FormatException e) when (e.Message.Contains("(map: begin)", StringComparison.OrdinalIgnoreCase))
+		{
+			return (null, "An error occured while parsing map: expected \"(map: begin)\" after map header (\"?PWSandbox-Map 1.0;\"), but it was not found.");
+		}
+		catch (FormatException e) when (e.Message.Contains("map header", StringComparison.OrdinalIgnoreCase))
+		{
+			return (null, "This file is not a valid PWSandbox map or it is a map designed for a newer/older version of PWSandbox.");
+		}
+		catch (IOException)
+		{
+			return (null, "An error occurred when reading this file. Please check it's not blocked by anithing.");
+		}
+
+		return (new PlayMenu(mapObjects), null);
 	}
 }
