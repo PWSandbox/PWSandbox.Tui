@@ -46,7 +46,7 @@ public static class Program
 			Console.WriteLine(errorText);
 			playMenu?.Start();
 		}
-		else Console.WriteLine($"PWSandbox.Tui (v{(AppVersion is not null ? ' ' + AppVersion.ToString(3) : "")}: Wrong arguments!");
+		else Console.WriteLine($"PWSandbox.Tui{(AppVersion is not null ? $" v{AppVersion.ToString(3)}" : "")}: Wrong arguments!");
 	}
 
 	#region Handling of unhandled exceptions
