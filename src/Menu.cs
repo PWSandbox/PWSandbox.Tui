@@ -1,4 +1,4 @@
-// This file is a part of PWSandbox.Tui (https://github.com/PWSandbox/PWSandbox.Tui )
+// This file is a part of PWSandbox.Tui ( https://github.com/PWSandbox/PWSandbox.Tui )
 // PWSandbox.Tui is licensed under the MIT (Expat) License:
 
 /* MIT License
@@ -39,19 +39,16 @@ public static class Menu
 		{
 			Console.Clear();
 
-			Console.WriteLine(
-$"PWSandbox.Tui v{System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "<Unknown!>"}" + @"
-by yarb00
+			Console.WriteLine($"""
+				PWSandbox.Tui{(Program.AppVersion is not null ? $" v{Program.AppVersion.ToString(3)}" : "")}
+				https://github.com/PWSandbox/PWSandbox.Tui
 
-https://github.com/PWSandbox/PWSandbox.Tui
+				==========
 
-==========
+				M. Load map from file
+				Q. Quit
 
-M. Load map from file
-Q. Quit
-
-"
-			);
+				""");
 
 			switch (char.ToUpper(Console.ReadKey(true).KeyChar))
 			{
