@@ -48,7 +48,7 @@ public class PlayMenu
 		{
 			Console.Clear();
 
-			Console.WriteLine("PWSandbox.Tui [Play]\n");
+			Console.WriteLine($"PWSandbox.Tui{(Program.AppVersion is not null ? $" v{Program.AppVersion.ToString(3)}" : "")} [Play]\n");
 
 			ProcessMap();
 
