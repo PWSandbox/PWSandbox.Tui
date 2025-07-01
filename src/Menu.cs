@@ -85,7 +85,7 @@ public static class Menu
 		MapObject[,] mapObjects;
 		try
 		{
-			mapObjects = MapParser.ParseMapFromFile(mapFileLocation, MapFileVersion.V1_0);
+			mapObjects = MapParser.ParseMapFromFile(mapFileLocation);
 		}
 		catch (Exception e) when (e is FileNotFoundException or DirectoryNotFoundException)
 		{
@@ -95,17 +95,22 @@ public static class Menu
 		{
 			return (null, "Please enter a valid path of the map file.");
 		}
-		catch (FormatException e) when (e.Message.Contains("(map: end)", StringComparison.OrdinalIgnoreCase))
+		catch (ArgumentException e) when (e.ParamName == "filePath")
 		{
-			return (null, "An error occured while parsing map: expected \"(map: end)\" in the end of file, but it was not found.");
+			return (null, "The file you selected is empty and does not contain a valid PWSandbox map.");
 		}
-		catch (FormatException e) when (e.Message.Contains("(map: begin)", StringComparison.OrdinalIgnoreCase))
+		catch (Exception ex) when (ex is FormatException or NotSupportedException)
 		{
-			return (null, "An error occured while parsing map: expected \"(map: begin)\" after map header (\"?PWSandbox-Map 1.0;\"), but it was not found.");
-		}
-		catch (FormatException e) when (e.Message.Contains("map header", StringComparison.OrdinalIgnoreCase))
-		{
-			return (null, "This file is not a valid PWSandbox map or it is a map designed for a newer/older version of PWSandbox.");
+			return (null, $"""
+				Map file is not valid!
+				It's either made for a newer version of PWSandbox or just written incorrectly.
+
+				Contact map maker and let them know about this problem.
+				(If you are the map maker and map file is being loaded with the right version of PWSandbox,
+				then you wrote map file in a wrong way. Check detailed message.)
+
+				Detailed message: "{ex.Message}"
+				""");
 		}
 		catch (IOException)
 		{

@@ -30,6 +30,12 @@ using System.Linq;
 
 namespace PWSandbox.Tui;
 
+public enum MapVersion
+{
+	V1_0,
+	V1_1 // Added '.' as alias to ' ' ("Void" object)
+}
+
 public enum MapObject
 {
 	Unknown = -1, Void,
@@ -38,36 +44,47 @@ public enum MapObject
 	Wall, FakeWall, Barrier
 }
 
-public enum MapFileVersion
-{
-	V1_0
-}
-
 public static class MapParser
 {
-	public static MapObject[,] ParseMapFromFile(string filePath, MapFileVersion mapFileVersion)
+	public static MapObject[,] ParseMapFromFile(string filePath, MapVersion? mapVersion = null)
 	{
 		try
 		{
-			return ParseMapFromStringArray(File.ReadAllLines(filePath), mapFileVersion);
+			return ParseMapFromStringArray(File.ReadAllLines(filePath), mapVersion);
 		}
-		catch (Exception)
+		catch (ArgumentException e) when (e.ParamName == "mapLines")
+		{
+			throw new ArgumentException("Provided file is empty", nameof(filePath), e);
+		}
+		catch
 		{
 			throw;
 		}
 	}
 
-	public static MapObject[,] ParseMapFromStringArray(string[] mapLines, MapFileVersion mapFileVersion)
+	public static MapObject[,] ParseMapFromStringArray(string[] mapLines, MapVersion? mapVersion = null)
 	{
+		if (mapLines.Length == 0) throw new ArgumentException("Map cannot be empty", nameof(mapLines));
+
+		if (mapVersion is null)
+		{
+			if (mapLines[0].TrimStart().StartsWith("?PWSandbox-Map 1.0;", true, null))
+				mapVersion = MapVersion.V1_0;
+			else if (mapLines[0].TrimStart().StartsWith("?PWSandbox-Map 1.1;", true, null))
+				mapVersion = MapVersion.V1_1;
+			else throw new NotSupportedException("Failed to detect map version");
+		}
+
 		try
 		{
-			return mapFileVersion switch
+			return mapVersion switch
 			{
-				MapFileVersion.V1_0 => ParseMapV1_0(mapLines),
+				MapVersion.V1_0 => ParseMapV1_0(mapLines),
+				MapVersion.V1_1 => ParseMapV1_1(mapLines),
 				_ => throw new NotImplementedException()
 			};
 		}
-		catch (Exception)
+		catch
 		{
 			throw;
 		}
@@ -75,24 +92,25 @@ public static class MapParser
 
 	#region Parsers
 
-	private static MapObject[,] ParseMapV1_0(string[] mapLines)
+	private static MapObject[,] ParseMapV1_0(string[] mapLines) => ParseMapV1_1(mapLines, true);
+
+	private static MapObject[,] ParseMapV1_1(string[] mapLines, bool legacyBehaviour = false)
 	{
 		for (int y = 0; y < 3; y++)
 		{
+			string mapHeader = legacyBehaviour ? "?PWSandbox-Map 1.0;" : "?PWSandbox-Map 1.1;";
+
 			mapLines = mapLines.Where(str => !string.IsNullOrWhiteSpace(str)).ToArray();
 
 			switch (y)
 			{
 				case 0:
-					if (mapLines[0].TrimStart().StartsWith("?PWSandbox-Map 1.0;", true, null))
+					if (mapLines[0].TrimStart().StartsWith(mapHeader, true, null))
 					{
-						mapLines[0] = mapLines[0].TrimStart().Remove(0, "?PWSandbox-Map 1.0;".Length);
+						mapLines[0] = mapLines[0].TrimStart().Remove(0, mapHeader.Length);
 						continue;
 					}
-					else
-					{
-						throw new FormatException($"String array doesn't contain map header or version of standard in map header is unsupported");
-					}
+					else throw new FormatException($"Map header with supported version of standard was not found");
 
 				case 1:
 					if (mapLines[0].TrimStart().StartsWith("(map: begin)", true, null))
@@ -100,10 +118,7 @@ public static class MapParser
 						mapLines[0] = mapLines[0].TrimStart().Remove(0, "(map: begin)".Length);
 						continue;
 					}
-					else
-					{
-						throw new FormatException($"Expected \"(map: begin)\" block after map header (\"?PWSandbox-Map 1.0;\") in string array, but it was not found");
-					}
+					else throw new FormatException($"Expected \"(map: begin)\" block after map header (\"?{mapHeader}\"), but it was not found");
 
 				case 2:
 					if (mapLines[^1].TrimEnd().EndsWith("(map: end)", true, null))
@@ -113,10 +128,7 @@ public static class MapParser
 
 						break;
 					}
-					else
-					{
-						throw new FormatException($"Expected \"(map: end)\" block in the end of string array, but it was not found");
-					}
+					else throw new FormatException($"Expected \"(map: end)\" block in the end of map, but it was not found");
 			}
 		}
 
@@ -132,6 +144,7 @@ public static class MapParser
 				mapObjects[y, x] = mapLines[y][x] switch
 				{
 					' ' => MapObject.Void,
+					'.' when !legacyBehaviour => MapObject.Void,
 					'!' => MapObject.Player,
 					'=' => MapObject.Finish,
 					'@' => MapObject.Wall,
