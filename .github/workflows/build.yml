@@ -15,17 +15,14 @@ jobs:
     strategy:
       matrix:
         os:
-          # PLEASE WORK
-          - runner_name: ubuntu-latest
+          - runner_name: ubuntu-22.04
             dotnet_rid: linux-x64
-          # - runner_name: ubuntu-22.04
-          #   dotnet_rid: linux-x64
-          # - runner_name: windows-2022
-          #   dotnet_rid: win-x64
-          # - runner_name: macos-14-large
-          #   dotnet_rid: osx-x64
-          # - runner_name: macos-14
-          #   dotnet_rid: osx-arm64
+          - runner_name: windows-2022
+            dotnet_rid: win-x64
+          - runner_name: macos-latest-large
+            dotnet_rid: osx-x64
+          - runner_name: macos-latest
+            dotnet_rid: osx-arm64
     runs-on: ${{ matrix.os.runner_name }}
     steps:
       - name: Checkout
