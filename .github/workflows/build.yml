@@ -39,6 +39,6 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v5
         with:
-          name: PWSandbox.Tui (${{ matrix.os.runner_name }}) (Release) (${{ matrix.os.dotnet_rid }})
+          name: (PWSandbox.Tui)-(${{ matrix.os.runner_name }})-(Release)-(${{ matrix.os.dotnet_rid }})
           path: src/bin/Release/net8.0/${{ matrix.os.dotnet_rid }}/publish
           if-no-files-found: error
