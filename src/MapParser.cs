@@ -32,7 +32,7 @@ internal static class MapParser
 	/// </summary>
 	/// <param name="filePath">The path to the file.</param>
 	/// <param name="mapVersion">The map's version or <see langword="null" /> if it is unknown.</param>
-	/// <returns>A <see cref="Map" /> parsed from the file.</returns
+	/// <returns>A <see cref="Map" /> parsed from the file.</returns>
 	/// <exception cref="FormatException">Thrown when the provided map is empty, its version could not be detected or it is incorrect and cannot be parsed.</exception>
 	/// <exception cref="NotSupportedException">Thrown when the version of the provided map is not supported.</exception>
 	public static Map ParseMapFromFile(string filePath, MapVersion? mapVersion = null)
