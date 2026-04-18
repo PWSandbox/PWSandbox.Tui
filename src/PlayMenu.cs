@@ -1,114 +1,96 @@
-// This file is a part of PWSandbox.Tui ( https://github.com/PWSandbox/PWSandbox.Tui )
-// PWSandbox.Tui is licensed under the MIT (Expat) License:
-
-/* MIT License
- *
- * Copyright (c) 2025 yarb00
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// https://pws.yarb00.dev
 
 using System;
 using System.Collections.Generic;
 
 namespace PWSandbox.Tui;
 
-public class PlayMenu
-{
-	private readonly MapObject[,] mapObjects;
+internal readonly record struct Position(int X, int Y);
 
-	private (int x, int y)? playerPosition = null;
+internal class PlayMenu(Map map) : IMenu
+{
+	private static readonly Dictionary<MapObject, char> CharacterByMapObject = new()
+	{
+		[MapObject.Unknown] = '?',
+		[MapObject.Void] = '.',
+		[MapObject.Player] = '!',
+		[MapObject.Finish] = '=',
+		[MapObject.Wall] = '@',
+		[MapObject.FakeWall] = '@', // Same color as Wall
+		[MapObject.Barrier] = '.' // Same color as Void
+	};
+
+	private readonly MapObject[,] mapObjects = map.Objects;
+
+	private Position? playerPosition = null;
 
 	bool isExit = false, isOnFinish = false;
 
-	public PlayMenu(MapObject[,] mapObjects)
+	public void Show()
 	{
-		this.mapObjects = mapObjects;
-	}
-
-	public void Start()
-	{
-		while (true)
+		while (!isExit)
 		{
 			Console.Clear();
 
-			Console.WriteLine($"PWSandbox.Tui{(Program.AppVersion is not null ? $" v{Program.AppVersion.ToString(3)}" : "")} [Play]\n");
+			Console.WriteLine($"===== PWSandbox.Tui [Play] =====");
 
 			ProcessMap();
 
-			if (isOnFinish) Console.WriteLine("\nYou have reached the finish!");
+			if (isOnFinish)
+			{
+				Console.WriteLine();
+				Console.WriteLine("You have reached the finish!");
+			}
 
-			Console.WriteLine(
-'\n' + @"Controls:
+			Console.WriteLine();
+			Console.WriteLine("""
+				Controls:
 
-Escape - back to main menu
-W/Up - move up
-D/Down - move down
-S/Left - move left
-D/Right - move right"
-			);
+				Escape - back to main menu
+				W/Up - move up
+				D/Down - move down
+				S/Left - move left
+				D/Right - move right
+				""");
 
-			ProcessKey(Console.ReadKey(true));
-
-			if (isExit) break;
+			ProcessKey(Console.ReadKey(true).Key);
 		}
-
-		Console.Clear();
 	}
 
-	private void ProcessKey(ConsoleKeyInfo key)
+	private void ProcessKey(ConsoleKey key)
 	{
-		if (key.Key == ConsoleKey.Escape)
+		if (key == ConsoleKey.Escape)
 		{
 			isExit = true;
-
 			return;
 		}
 
-		if (playerPosition is null ||
-			!new List<ConsoleKey>
-			{
-				ConsoleKey.W, ConsoleKey.UpArrow,
-				ConsoleKey.S, ConsoleKey.DownArrow,
-				ConsoleKey.A, ConsoleKey.LeftArrow,
-				ConsoleKey.D, ConsoleKey.RightArrow
-			}.Contains(key.Key)) return;
+		if (playerPosition is null) return;
+		(int playerX, int playerY) = (Position)playerPosition;
 
-		(int playerX, int playerY) = ((int, int))playerPosition;
-
-		switch (key.Key)
+		switch (key)
 		{
 			case ConsoleKey.W or ConsoleKey.UpArrow:
-				if (!IsCollision((playerX, playerY - 1))) playerY -= 1;
+				if (!IsCollision(playerX, playerY - 1)) playerY -= 1;
 				break;
+
 			case ConsoleKey.S or ConsoleKey.DownArrow:
-				if (!IsCollision((playerX, playerY + 1))) playerY += 1;
+				if (!IsCollision(playerX, playerY + 1)) playerY += 1;
 				break;
+
 			case ConsoleKey.A or ConsoleKey.LeftArrow:
-				if (!IsCollision((playerX - 1, playerY))) playerX -= 1;
+				if (!IsCollision(playerX - 1, playerY)) playerX -= 1;
 				break;
+
 			case ConsoleKey.D or ConsoleKey.RightArrow:
-				if (!IsCollision((playerX + 1, playerY))) playerX += 1;
+				if (!IsCollision(playerX + 1, playerY)) playerX += 1;
 				break;
+
+			default:
+				return;
 		}
 
-		playerPosition = (playerX, playerY);
+		playerPosition = new(playerX, playerY);
 	}
 
 	private void ProcessMap()
@@ -121,59 +103,41 @@ D/Right - move right"
 			{
 				switch (mapObjects[y, x])
 				{
-					case MapObject.Unknown:
-						if (playerPosition != (x, y)) Console.Write('?');
-						break;
-
-					case MapObject.Void:
-						if (playerPosition != (x, y)) Console.Write(' ');
-						break;
-
 					case MapObject.Player:
-						playerPosition ??= (x, y);
-						if (playerPosition != (x, y)) Console.Write(' ');
+						playerPosition ??= new Position(x, y);
+						if (playerPosition != new Position(x, y)) Console.Write(CharacterByMapObject[MapObject.Void]);
 						break;
 
-					case MapObject.Finish:
-						if (playerPosition == (x, y)) isOnFinish = true;
-						if (playerPosition != (x, y)) Console.Write('=');
-						break;
+					case MapObject.Finish when playerPosition == new Position(x, y):
+						isOnFinish = true;
+						goto default;
 
-					case MapObject.Wall:
-						if (playerPosition != (x, y)) Console.Write('@');
-						break;
-
-					case MapObject.FakeWall:
-						if (playerPosition != (x, y)) Console.Write('@');
-						break;
-
-					case MapObject.Barrier:
-						if (playerPosition != (x, y)) Console.Write(' ');
+					default:
+						if (playerPosition != new Position(x, y)) Console.Write(CharacterByMapObject[mapObjects[y, x]]);
 						break;
 				}
 
-				if (playerPosition == (x, y)) Console.Write('!');
+				if (playerPosition == new Position(x, y)) Console.Write(CharacterByMapObject[MapObject.Player]);
 			}
 
 			Console.WriteLine();
 		}
 	}
 
-	private bool IsCollision((int x, int y) coordinates)
-	{
-		bool isCollision = false;
+	private bool IsCollision(int x, int y) => IsCollision(new(x, y));
 
+	private bool IsCollision(Position coordinates)
+	{
+		MapObject @object;
 		try
 		{
-			if (mapObjects[coordinates.y, coordinates.x] == MapObject.Wall
-			|| mapObjects[coordinates.y, coordinates.x] == MapObject.Barrier)
-				isCollision = true;
+			@object = mapObjects[coordinates.Y, coordinates.X];
 		}
 		catch (IndexOutOfRangeException)
 		{
-			isCollision = true;
+			return true;
 		}
 
-		return isCollision;
+		return @object is MapObject.Wall or MapObject.Barrier;
 	}
 }

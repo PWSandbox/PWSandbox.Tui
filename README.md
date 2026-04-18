@@ -1,7 +1,7 @@
-# [PWSandbox.Tui](https://github.com/PWSandbox/PWSandbox.Tui)
+# [PWSandbox.Tui](https://pws.yarb00.dev)
 
 *Simple sandbox game, built with .NET.*
 
-This is a cross-platform console version of PWSandbox.
+This is a **cross-platform** *console version* of PWSandbox.
 
-The regular GUI version of PWSandbox can be found [here](https://github.com/PWSandbox/PWSandbox) (Windows only).
+On Windows, you can use the [regular GUI version of PWSandbox](https://github.com/PWSandbox/PWSandbox).
