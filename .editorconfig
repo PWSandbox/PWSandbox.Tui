@@ -1,5 +1,3 @@
-# EditorConfig ( https://editorconfig.org ) for PWSandbox.Tui ( https://github.com/PWSandbox/PWSandbox.Tui )
-
 root = true
 
 [*]
@@ -8,9 +6,12 @@ insert_final_newline = true
 charset = utf-8
 trim_trailing_whitespace = true
 
+[*.md]
+trim_trailing_whitespace = false
+
 [*.cs]
 indent_style = tab
 
-[*.csproj]
+[*.{csproj,slnx,yml}]
 indent_style = space
 indent_size = 2
