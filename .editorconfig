@@ -10,8 +10,12 @@ trim_trailing_whitespace = true
 trim_trailing_whitespace = false
 
 [*.cs]
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+[*.{cs,json}]
 indent_style = tab
 
-[*.{csproj,slnx,yml}]
+[*.{csproj,slnx,props}]
 indent_style = space
 indent_size = 2

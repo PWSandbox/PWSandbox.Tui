@@ -9,12 +9,13 @@ namespace PWSandbox.Tui;
 
 internal interface IMenu
 {
-	void Show();
+	void ShowDialog();
 }
 
 internal static class Program
 {
 	public const string Website = "https://pws.yarb00.dev";
+
 	public const string License = """
 		Copyright (c) 2025-2026 yarb00
 
@@ -25,24 +26,34 @@ internal static class Program
 		THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 		""";
 
-	public static readonly Version Version = Assembly.GetExecutingAssembly().GetName().Version ?? throw new UnreachableException("Assembly version can't be null.");
+	public static readonly Version Version =
+		Assembly.GetExecutingAssembly().GetName().Version
+		?? throw new UnreachableException("Assembly version cannot be null.");
+
 	public static readonly string FriendlyVersion = Version.ToString(3);
 
 	public static void Main(string[] args)
 	{
-		if (!Debugger.IsAttached) AppDomain.CurrentDomain.UnhandledException += (_, e) => HandleUnhandledException((Exception)e.ExceptionObject);
+		if (!Debugger.IsAttached)
+			AppDomain.CurrentDomain.UnhandledException += (_, e) =>
+				HandleUnhandledException((Exception)e.ExceptionObject);
 
-		if (args.Length == 0) new MainMenu().Show();
-		else if (args.Length == 2 && args[0] is "--map-file" or "-m") MainMenu.LoadMapInteractively(args[1]);
-		else Console.WriteLine($"""
-			===== PWSandbox.Tui v{FriendlyVersion} =====
-			Wrong arguments!
-			""");
-			
+		if (args.Length == 0)
+			new MainMenu().ShowDialog();
+		else if (args.Length == 2 && args[0] is "--map-file" or "-m")
+			MainMenu.LoadMapInteractively(args[1]);
+		else
+			Console.WriteLine(
+				$"""
+				===== PWSandbox.Tui v{FriendlyVersion} =====
+				Wrong arguments!
+				"""
+			);
 	}
 
 	private static void HandleUnhandledException(Exception e)
 	{
+		// csharpier-ignore
 		string
 			issueTitle = $"Unhandled exception: `{e.GetType().Name}`",
 			issueBody = $"""
@@ -62,7 +73,8 @@ internal static class Program
 				""",
 			issueReportLink = $"{Website}/issue/report/tui?title={Uri.EscapeDataString(issueTitle)}&body={Uri.EscapeDataString(issueBody)}";
 
-		Environment.FailFast($"""
+		Environment.FailFast(
+			$"""
 			===== PWSandbox.Tui: Unhandled exception! =====
 			An unhandled exception occurred! An unhandled exception is a serious error that should not normally happen.
 			Unfortunately, because of that, PWSandbox.Tui had to exit.
@@ -74,6 +86,8 @@ internal static class Program
 			{e}
 
 			===== End of PWSandbox.Tui error message =====
-			""", e);
+			""",
+			e
+		);
 	}
 }

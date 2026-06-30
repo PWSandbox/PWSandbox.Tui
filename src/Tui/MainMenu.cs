@@ -1,47 +1,51 @@
 // https://pws.yarb00.dev
 
 using System;
+using PWSandbox.Formats;
 
 namespace PWSandbox.Tui;
 
-internal class MainMenu : IMenu
+internal sealed class MainMenu : IMenu
 {
-	public void Show()
+	public void ShowDialog()
 	{
-		bool isExit = false;
+		bool shouldExit = false;
 
-		while (!isExit)
+		while (!shouldExit)
 		{
 			Console.Clear();
 
-			Console.WriteLine($"""
+			Console.WriteLine(
+				$"""
 				===== PWSandbox.Tui v{Program.FriendlyVersion} =====
 				M. Load map
 				A. About PWSandbox.Tui
 				U. Check for updates
 				Q. Quit
-				""");
+				"""
+			);
 
-			switch (char.ToUpper(Console.ReadKey(true).KeyChar))
+			switch (char.ToUpper(Console.ReadKey(intercept: true).KeyChar))
 			{
 				case 'M':
 					Console.WriteLine();
 					Console.WriteLine("Enter map file (*.pws_map) location: ");
 					string? filePath = Console.ReadLine();
-					if (filePath is null) goto case 'Q';
+					if (filePath is null)
+						goto case 'Q';
 					LoadMapInteractively(filePath);
 					continue;
 
 				case 'A':
-					new AboutMenu().Show();
+					new AboutMenu().ShowDialog();
 					continue;
 
 				case 'U':
-					new UpdateCheckMenu().Show();
+					new UpdateCheckMenu().ShowDialog();
 					continue;
 
 				case 'Q':
-					isExit = true;
+					shouldExit = true;
 					break;
 
 				default:
@@ -55,11 +59,12 @@ internal class MainMenu : IMenu
 		Map map;
 		try
 		{
-			map = MapParser.ParseMapFromFile(filePath);
+			map = Map.ParseFromFile(filePath);
 		}
 		catch (Exception e) when (e is FormatException or NotSupportedException)
 		{
-			Console.WriteLine($"""
+			Console.WriteLine(
+				$"""
 				===== PWSandbox.Tui v{Program.FriendlyVersion} =====
 
 				Map file is not valid!
@@ -73,30 +78,37 @@ internal class MainMenu : IMenu
 				{e.Message}
 
 				Press Escape to return.
-				""");
+				"""
+			);
 
 			ConsoleKey pressedKey;
-			do pressedKey = Console.ReadKey(true).Key; while (pressedKey != ConsoleKey.Escape);
+
+			do pressedKey = Console.ReadKey(intercept: true).Key;
+			while (pressedKey != ConsoleKey.Escape);
 
 			return;
 		}
 		catch (Exception e)
 		{
-			Console.WriteLine($"""
+			Console.WriteLine(
+				$"""
 				===== PWSandbox.Tui v{Program.FriendlyVersion} =====
 
 				An error occurred while trying to read the map file:
 				{e.Message}
 
 				Press Escape to return.
-				""");
+				"""
+			);
 
 			ConsoleKey pressedKey;
-			do pressedKey = Console.ReadKey(true).Key; while (pressedKey != ConsoleKey.Escape);
+
+			do pressedKey = Console.ReadKey(intercept: true).Key;
+			while (pressedKey != ConsoleKey.Escape);
 
 			return;
 		}
 
-		new PlayMenu(map).Show();
+		new PlayMenu(map).ShowDialog();
 	}
 }

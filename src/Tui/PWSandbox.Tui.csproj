@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <Product>PWSandbox.Tui</Product>
+    <Copyright>Copyright (c) 2025-2026 yarb00</Copyright>
+    <AssemblyTitle>$(Product)</AssemblyTitle>
+    <VersionPrefix>0.3.0</VersionPrefix>
+    <RootNamespace>PWSandbox.Tui</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Formats/PWSandbox.Formats.csproj" />
+  </ItemGroup>
+</Project>
